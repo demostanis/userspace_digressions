@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"golang.org/x/sys/unix"
 )
+
+func recoveryShell() {
+	unix.Exec("/bin/sh", []string{"sh"}, []string{})
+}
 
 func main() {
 	fmt.Println("Hello, world!")
 	fmt.Println("Welcum to init uwu")
 
-	for {
-		time.Sleep(time.Second*69)
-	}
+	recoveryShell()
 }
