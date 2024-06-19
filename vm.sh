@@ -24,6 +24,7 @@ trap 'rm -rf "$tmp"' EXIT
 msg unpacking initramfs to replace /init...
 zcat boot/initramfs-virt | cpio --quiet -idD "$tmp"
 install -Dm755 ./init "$tmp"/init
+install -Dm755 ./initctl "$tmp"/sbin/initctl
 ( cd "$tmp"; find -print0 | sort -z | \
 	cpio -o0 --quiet -H newc | gzip
 ) > boot/initramfs-virt
