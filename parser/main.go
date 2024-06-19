@@ -16,16 +16,14 @@ type MountPoint struct {
 	MountPoint	string `@Ident`
 	Type		string `@Ident`
 	Options		string `@Ident`
-	Dump		string `@Ident`
-	Pass		string `@Ident`
+	Dump		string `@Ident?`
+	Pass		string `@Ident?`
 }
 
 var (
 	fstabLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{"Comment", `(?:#|//)[^\n]*\n?`},
+		{"Comment", `(?:#)[^\n]*\n?`},
 		{"Ident", `[a-zA-Z0-9/_\-.:,=]+`},
-		{"Number", `(?:\d*\.)?\d+`},
-		{"Punct", `[-[!@#$%^&*()+_={}\|:;"'<,>.?/]|]`},
 		{"Whitespace", `[ \t\n\r]+`},
 	})
 	parser = participle.MustBuild[FSTAB](
@@ -57,7 +55,7 @@ func main() {
     }
 
     for _, mp := range fstab.MountPoints {
-        fmt.Printf("FileSystem: %s, MountPoint: %s, Type: %s, Options: %s, Dump: %d, Pass: %d\n",
+        fmt.Printf("FileSystem: %s\nMountPoint: %s\nType: %s\nOptions: %s\nDump: %s\nPass: %s\n\n",
             mp.FileSystem, mp.MountPoint, mp.Type, mp.Options, mp.Dump, mp.Pass)
     }
 }
