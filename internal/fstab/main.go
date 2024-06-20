@@ -78,52 +78,20 @@ func MountMP(mp *MountPoint) {
 	unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)
 }
 
-func MountDefaultsMPs() {
-	err = os.MkdirAll("/dev", 0755)
-	if err != nil {
-		fmt.Println("/dev already exist")
-	}
-	err = os.MkdirAll("/proc", 0755)
-	if err != nil {
-		fmt.Println("/proc already exist")
-	}
-	err = os.MkdirAll("/dev/pts", 0755)
-	if err != nil {
-		fmt.Println("/dev/pts already exist")
-	}
-	err = os.MkdirAll("/dev/shm", 0755)
-	if err != nil {
-		fmt.Println("/dev/shm already exist")
-	}
-
-	devtmpfs	:= MountPoint{"devtmpfs", "/dev", "devtmpfs", "exec,nosuid,mode=0755,size=2M", "", ""}
-	tmpfs		:= MountPoint{"tmpfs", "/dev", "tmpfs", "exec,nosuid,mode=0755,size=2M", "", ""}
-	proc		:= MountPoint{"proc", "/proc", "proc", "noexec,nosuid,nodev", "", ""}
-	devpts		:= MountPoint{"devpts", "/dev/pts", "devpts", "gid=5,mode=0620,noexec,nosuid", "", ""}
-	shm			:= MountPoint{"shm", "/dev/shm", "tmpfs", "nodev,nosuid,noexec", "", ""}
-
-	MountMP(&devtmpfs)
-	MountMP(&tmpfs)
-	MountMP(&proc)
-	MountMP(&devpts)
-	MountMP(&shm)
-}
-
-func FstabParser(file string) {
+func FstabParser(file string) error {
 	content, err := os.ReadFile(file)
 	if err != nil {
-		fmt.Println("Error reading  file:", err)
+		fmt.Errorf("error reading  file: %s", err)
 		return
 	}
 	content_str := string(content)
 
 	fstab, err := parser.ParseString("", content_str)
 	if err != nil {
-		fmt.Println("Error parsing file:", err)
+		fmt.Errorf("error parsing file: %s", err)
 		return
 	}
 
-	MountDefaultsMPs()
 	for _, mp := range fstab.MountPoints {
 		MountMP(mp)
 	}
