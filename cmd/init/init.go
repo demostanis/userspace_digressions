@@ -36,37 +36,26 @@ func dmesg(message string) {
 	}
 }
 
-func run() {
-	var err error
-	defer func() {
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			recoveryShell()
-		}
-	}()
-
+func run() error {
 	// we execve'd into ourselves from the initramfs,
 	// start the real init (see internal/newroot/switch.go)
 	if len(os.Args) > 1 && os.Args[1] == "__realinit" {
-		err = mount.MountDefaultMountpoints()
+		err := mount.MountDefaultMountpoints()
 		if err != nil {
-			err = fmt.Errorf("failed to mount default mountpoints: %w", err)
-			return
+			return fmt.Errorf("failed to mount default mountpoints: %w", err)
 		}
 
 		dmesg("Welcum to inwit UwU!!1")
 
 		err = modules.LoadModules()
 		if err != nil {
-			err = fmt.Errorf("failed to modules: %w", err)
-			return
+			return fmt.Errorf("failed to modules: %w", err)
 		}
 
 		err = network.StartNetworking()
 		if err != nil {
 			// TODO: don't start a recovery shell for that...
-			err = fmt.Errorf("failed to start networking: %w", err)
-			return
+			return fmt.Errorf("failed to start networking: %w", err)
 		}
 
 		// for debugging...
@@ -78,42 +67,43 @@ func run() {
 
 		l, err := net.Listen("tcp", port)
 		if err != nil {
-			err = fmt.Errorf("rpc interface failed to listen to port %s: %w", port, err)
-			return
+			return fmt.Errorf("rpc interface failed to listen to port %s: %w", port, err)
 		}
 
 		err = http.Serve(l, nil)
 		if err != nil {
-			err = fmt.Errorf("rpc interface failed to serve: %w", err)
-			return
+			return fmt.Errorf("rpc interface failed to serve: %w", err)
 		}
 	} else {
 		// initramfs code
-		err = mount.MountDefaultMountpointsInitramfs()
+		err := mount.MountDefaultMountpointsInitramfs()
 		if err != nil {
-			err = fmt.Errorf("failed to mount default mountpoints: %w", err)
-			return
+			return fmt.Errorf("failed to mount default mountpoints: %w", err)
 		}
 
 		err = newroot.SetupNewroot()
 		if err != nil {
-			err = fmt.Errorf("failed to setup newroot: %w", err)
-			return
+			return fmt.Errorf("failed to setup newroot: %w", err)
 		}
 
 		err = mount.MountModloop()
 		if err != nil {
-			return
+			return err
 		}
 
 		err = newroot.Switch()
 		if err != nil {
-			err = fmt.Errorf("failed to setup switch to newroot: %w :(", err)
-			return
+			return fmt.Errorf("failed to setup switch to newroot: %w :(", err)
 		}
 	}
+
+	return nil
 }
 
 func main() {
-	run()
+	err := run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		recoveryShell()
+	}
 }
