@@ -13,6 +13,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/network"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
+	"github.com/demostanis/userspace_digressions/internal/tty"
 	"golang.org/x/sys/unix"
 )
 
@@ -57,14 +58,19 @@ func run() error {
 			return fmt.Errorf("failed to set hostname: %w", err)
 		}
 
-		err = network.StartNetworking()
-		if err != nil {
-			// TODO: don't start a recovery shell for that...
-			return fmt.Errorf("failed to start networking: %w", err)
-		}
+		go func() {
+			err = network.StartNetworking()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to start networking: %v\n", err)
+			}
+		}()
 
-		// for debugging...
-		go recoveryShell()
+		go func() {
+			err = tty.SetupTTYs()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to setup default consoles: %v", err)
+			}
+		}()
 
 		powerctl := new(initctl.Powerctl)
 		rpc.Register(powerctl)
