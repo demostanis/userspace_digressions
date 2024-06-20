@@ -11,6 +11,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/initctl"
 	"github.com/demostanis/userspace_digressions/internal/modules"
 	"github.com/demostanis/userspace_digressions/internal/mount"
+	"github.com/demostanis/userspace_digressions/internal/network"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
 	"golang.org/x/sys/unix"
 )
@@ -58,6 +59,13 @@ func run() {
 		err = modules.LoadModules()
 		if err != nil {
 			err = fmt.Errorf("failed to modules: %w", err)
+			return
+		}
+
+		err = network.StartNetworking()
+		if err != nil {
+			// TODO: don't start a recovery shell for that...
+			err = fmt.Errorf("failed to start networking: %w", err)
 			return
 		}
 

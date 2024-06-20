@@ -72,14 +72,14 @@ func installApks(repository string) error {
 	return nil
 }
 
-func copyToNewroot() error {
-	r, err := os.Open(os.Args[0])
+func copyFileToNewroot(filename string) error {
+	r, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
-	w, err := os.OpenFile(fmt.Sprintf("%s/%s", sysroot, os.Args[0]),
+	w, err := os.OpenFile(fmt.Sprintf("%s/%s", sysroot, filename),
 		os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
@@ -88,6 +88,18 @@ func copyToNewroot() error {
 
 	_, err = w.ReadFrom(r)
 	return err
+}
+
+func copyToNewroot() error {
+	err := copyFileToNewroot(os.Args[0])
+	if err != nil {
+		return fmt.Errorf("failed to copy ourselves to newroot: %w", err)
+	}
+	err = copyFileToNewroot("/sbin/initctl")
+	if err != nil {
+		return fmt.Errorf("failed to copy initctl to newroot: %w", err)
+	}
+	return nil
 }
 
 func SetupNewroot() error {
@@ -105,7 +117,7 @@ func SetupNewroot() error {
 	}
 	err = copyToNewroot()
 	if err != nil {
-		return fmt.Errorf("failed to copy ourselves to newroot: %w", err)
+		return err
 	}
 	return nil
 }
