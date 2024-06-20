@@ -52,6 +52,11 @@ func run() error {
 			return fmt.Errorf("failed to modules: %w", err)
 		}
 
+		err = network.SetHostname()
+		if err != nil {
+			return fmt.Errorf("failed to set hostname: %w", err)
+		}
+
 		err = network.StartNetworking()
 		if err != nil {
 			// TODO: don't start a recovery shell for that...
