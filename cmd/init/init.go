@@ -11,6 +11,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/initctl"
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
+	"github.com/demostanis/userspace_digressions/internal/network"
 	"golang.org/x/sys/unix"
 )
 
@@ -56,6 +57,12 @@ func run() {
 		}
 
 		dmesg("Welcum to inwit UwU!!1")
+
+		err = network.StartNetwork()
+		if err != nil {
+			err = fmt.Errorf("failed starting network: %w", err)
+			return
+		}
 
 		// for debugging...
 		go recoveryShell()
