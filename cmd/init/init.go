@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/demostanis/userspace_digressions/internal/initctl"
+	"github.com/demostanis/userspace_digressions/internal/modules"
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
 	"golang.org/x/sys/unix"
@@ -54,6 +55,12 @@ func run() {
 
 		dmesg("Welcum to inwit UwU!!1")
 
+		err = modules.LoadModules()
+		if err != nil {
+			err = fmt.Errorf("failed to modules: %w", err)
+			return
+		}
+
 		// for debugging...
 		go recoveryShell()
 
@@ -83,6 +90,11 @@ func run() {
 		err = newroot.SetupNewroot()
 		if err != nil {
 			err = fmt.Errorf("failed to setup newroot: %w", err)
+			return
+		}
+
+		err = mount.MountModloop()
+		if err != nil {
 			return
 		}
 

@@ -4,6 +4,8 @@ import (
 	"errors"
 )
 
+const sysroot = "/newroot"
+
 var defaultMountpoints = []Mountpoint{
 	{"sys", "/sys", "sysfs", ""},
 	{"dev", "/dev", "devtmpfs", ""},
@@ -13,8 +15,7 @@ var defaultMountpoints = []Mountpoint{
 
 var defaultMountpointsInitramfs = append([]Mountpoint{
 	// the subject wants us to fsck the rootfs...
-	{"tmpfs", "/newroot", "tmpfs", "mode=0755"},
-	// ...
+	{"tmpfs", sysroot, "tmpfs", "mode=0755"},
 }, defaultMountpoints...)
 
 func MountDefaultMountpoints() error {
