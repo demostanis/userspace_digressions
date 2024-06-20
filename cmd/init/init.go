@@ -12,6 +12,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
 	"github.com/demostanis/userspace_digressions/internal/network"
+	"github.com/demostanis/userspace_digressions/internal/modules"
 	"golang.org/x/sys/unix"
 )
 
@@ -99,6 +100,12 @@ func run() {
 		err = newroot.Switch()
 		if err != nil {
 			err = fmt.Errorf("failed to setup switch to newroot: %w :(", err)
+			return
+		}
+
+		err = modules.LoadModules()
+		if err != nil {
+			err = fmt.Errorf("failed to load modules: %w", err)
 			return
 		}
 	}
