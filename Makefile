@@ -11,7 +11,7 @@ build:
 	$(GO) build $(GOFLAGS) cmd/initctl/initctl.go
 
 clean:
-	$(RM) -r alpine.iso boot/
+	$(RM) -r alpine.iso boot/ swap.qcow2
 
 re: clean all
 

@@ -15,6 +15,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/tty"
 	"github.com/demostanis/userspace_digressions/internal/fstab"
 	"github.com/demostanis/userspace_digressions/internal/custom"
+	"github.com/demostanis/userspace_digressions/internal/swap"
 	"golang.org/x/sys/unix"
 )
 
@@ -36,6 +37,16 @@ func run() error {
 			return fmt.Errorf("failed to mount default mountpoints: %w", err)
 		}
 
+		err = custom.CopyCustomFilesToRoot()
+		if (err != nil) {
+			return fmt.Errorf("failed to copy custom files to new root: %w", err)
+		}
+
+		err = swap.ActivateSwap()
+		if err != nil {
+			return fmt.Errorf("failed to mount swap: %w", err)
+		}
+
 		err = fstab.FstabParser("/etc/fstab")
 		if (err != nil) {
 			return fmt.Errorf("failed to mount fstab: %w", err)
@@ -51,11 +62,6 @@ func run() error {
 		err = network.SetHostname()
 		if err != nil {
 			return fmt.Errorf("failed to set hostname: %w", err)
-		}
-
-		err = custom.CopyCustomFilesToRoot()
-		if (err != nil) {
-			return fmt.Errorf("failed to copy custom files to new root: %w", err)
 		}
 
 		go func() {

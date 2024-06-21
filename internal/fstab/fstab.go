@@ -74,6 +74,10 @@ func parseMountOptions(options string) (uintptr, string) {
 }
 
 func MountMP(mp *MountPoint) error {
+	if mp.Type == "swap" {
+		return nil
+	}
+
 	flags, remainingOptions := parseMountOptions(mp.Options)
 
 	err := os.MkdirAll(mp.Target, 0755)
@@ -81,7 +85,12 @@ func MountMP(mp *MountPoint) error {
 		return err
 	}
 
-	err = unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)	
+	err = unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)
+	fmt.Printf("Source:	%s\n", mp.Source)
+	fmt.Printf("Target:	%s\n", mp.Target)
+	fmt.Printf("Type:	%s\n", mp.Type)
+	fmt.Printf("flags:	%s\n", flags)
+	fmt.Printf("Opts:	%s\n", remainingOptions)
 	if err != nil  {
 		if err.Error() == "no such file or directory" {
 			return nil
@@ -116,7 +125,3 @@ func FstabParser(file string) error {
 
 	return nil
 }
-
-/* $MOCK mount -t sysfs -o noexec,nosuid,nodev sysfs /sys
-				  type			opt						target
-*/
