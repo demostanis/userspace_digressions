@@ -73,27 +73,50 @@ func parseMountOptions(options string) (uintptr, string) {
 	return flags, strings.Join(remainingOptions, ",")
 }
 
-func MountMP(mp *MountPoint) {
-	fmt.Printf("MOUNTPOINT => %s\n", mp.Source)
+func MountMP(mp *MountPoint) error {
 	flags, remainingOptions := parseMountOptions(mp.Options)
-	unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)
+
+	err := os.MkdirAll(mp.Target, 0755)
+	if (err != nil) {
+		return err
+	}
+
+	err = unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)	
+	if err != nil  {
+		if err.Error() == "no such file or directory" {
+			return nil
+		}
+		if err.Error() == "no medium found" {
+			return nil
+		}
+		return err
+	}
+
+	return nil
 }
 
 func FstabParser(file string) error {
 	content, err := os.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("error reading  file: %s", err)
+		return fmt.Errorf("error reading file: %w", err)
 	}
 	content_str := string(content)
 
 	fstab, err := parser.ParseString("", content_str)
 	if err != nil {
-		return fmt.Errorf("error parsing file: %s", err)
+		return fmt.Errorf("error parsing file: %w", err)
 	}
 
 	for _, mp := range fstab.MountPoints {
-		MountMP(mp)
+		err = MountMP(mp)
+		if err != nil {
+			return fmt.Errorf("error mounting mountpoint: %w", err)
+		}
 	}
 
 	return nil
 }
+
+/* $MOCK mount -t sysfs -o noexec,nosuid,nodev sysfs /sys
+				  type			opt						target
+*/
