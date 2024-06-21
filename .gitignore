@@ -1,6 +1,7 @@
 # VM
 boot/
 alpine.iso
+swap
 
 /init
 /initctl

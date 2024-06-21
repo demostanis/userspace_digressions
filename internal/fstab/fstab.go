@@ -73,7 +73,7 @@ func parseMountOptions(options string) (uintptr, string) {
 	return flags, strings.Join(remainingOptions, ",")
 }
 
-func MountMP(mp *MountPoint) error {
+func Mount(mp *MountPoint) error {
 	if mp.Type == "swap" {
 		return nil
 	}
@@ -117,7 +117,7 @@ func FstabParser(file string) error {
 	}
 
 	for _, mp := range fstab.MountPoints {
-		err = MountMP(mp)
+		err = Mount(mp)
 		if err != nil {
 			return fmt.Errorf("error mounting mountpoint: %w", err)
 		}

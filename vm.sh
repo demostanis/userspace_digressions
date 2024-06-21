@@ -35,9 +35,8 @@ install -Dm755 ./init "$tmp"/init
 install -Dm755 ./initctl "$tmp"/sbin/initctl
 
 # swaping swapong
-# dd if=/dev/zero of="$tmp"/swap bs=1M count=1
-chmod 600 $swap_name
-mkswap $swap_name
+chmod 600 "$swap_name"
+mkswap "$swap_name"
 
 cp -a custom/ "$tmp"
 ( cd "$tmp"; find -print0 | sort -z | \
