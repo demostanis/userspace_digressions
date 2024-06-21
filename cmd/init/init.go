@@ -13,6 +13,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/network"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
 	"github.com/demostanis/userspace_digressions/internal/tty"
+	"github.com/demostanis/userspace_digressions/internal/fstab"
 	"golang.org/x/sys/unix"
 )
 
@@ -32,6 +33,11 @@ func run() error {
 		err := mount.MountDefaultMountpoints()
 		if err != nil {
 			return fmt.Errorf("failed to mount default mountpoints: %w", err)
+		}
+
+		err = fstab.FstabParser("/etc/fstab")
+		if (err != nil) {
+			return fmt.Errorf("failed to mount fstab: %w", err)
 		}
 
 		initctl.Dmesg("Welcum to inwit UwU!!1")
