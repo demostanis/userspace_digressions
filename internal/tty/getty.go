@@ -3,6 +3,9 @@ package tty
 import (
 	"fmt"
 	"os/exec"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // reference: default alpine's /etc/inittab
@@ -27,11 +30,28 @@ func setupTTY(tty string) error {
 }
 
 func SetupTTYs() error {
+	var g errgroup.Group
+
 	for _, tty := range defaultTTYs {
-		err := setupTTY(tty)
-		if err != nil {
-			return err
-		}
+		// only log errors if getty failed to
+		// start before the 2 first seconds
+		// (afterward, it might be that it just got
+		// killed, e.g. by poweroff)
+		g.Go(func() error {
+			errchan := make(chan error)
+			ticker := time.NewTicker(2 * time.Second)
+
+			go func() {
+				errchan <- setupTTY(tty)
+			}()
+			select {
+			case <-ticker.C:
+				return nil
+			case err := <-errchan:
+				return err
+			}
+		})
 	}
-	return nil
+
+	return g.Wait()
 }

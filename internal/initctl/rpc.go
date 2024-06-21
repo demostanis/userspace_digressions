@@ -2,7 +2,17 @@ package initctl
 
 import (
 	"errors"
-	"fmt"
+	"syscall"
+	"time"
+
+	"golang.org/x/sys/unix"
+)
+
+// see <sys/reboot.h>
+const (
+	haltSystem          = 0x4321fedc
+	rebootSystem        = 0x1234567
+	sleepBeforeFatality = 1 * time.Second
 )
 
 type Powerctl int
@@ -23,8 +33,19 @@ func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
 		return errors.New("no reason provided")
 	}
 
-	fmt.Printf("shutting system down for the following reason: %s\n",
+	Dmesg("shutting system down for the following reason: %s",
 		args.Reason)
 
+	Dmesg("sending SIGTERM to every process")
+	unix.Kill(-1, syscall.SIGTERM)
+
+	time.Sleep(sleepBeforeFatality)
+	Dmesg("fatality")
+	unix.Kill(-1, syscall.SIGKILL)
+
+	unix.Sync()
+	unix.Reboot(haltSystem)
+
+	// yea, yea...
 	return ok(reply)
 }

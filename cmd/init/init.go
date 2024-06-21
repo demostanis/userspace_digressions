@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -26,17 +25,6 @@ func recoveryShell() {
 	unix.Exec("/bin/sh", []string{"sh"}, []string{})
 }
 
-func dmesg(message string) {
-	_, err := os.Stat("/dev/kmsg")
-
-	if err == nil {
-		message += "\n"
-		_ = os.WriteFile("/dev/kmsg", []byte(message), fs.ModeDevice)
-	} else {
-		fmt.Fprintln(os.Stderr, message)
-	}
-}
-
 func run() error {
 	// we execve'd into ourselves from the initramfs,
 	// start the real init (see internal/newroot/switch.go)
@@ -46,7 +34,7 @@ func run() error {
 			return fmt.Errorf("failed to mount default mountpoints: %w", err)
 		}
 
-		dmesg("Welcum to inwit UwU!!1")
+		initctl.Dmesg("Welcum to inwit UwU!!1")
 
 		err = modules.LoadModules()
 		if err != nil {
