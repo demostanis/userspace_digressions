@@ -14,6 +14,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/newroot"
 	"github.com/demostanis/userspace_digressions/internal/tty"
 	"github.com/demostanis/userspace_digressions/internal/fstab"
+	"github.com/demostanis/userspace_digressions/internal/custom"
 	"golang.org/x/sys/unix"
 )
 
@@ -50,6 +51,11 @@ func run() error {
 		err = network.SetHostname()
 		if err != nil {
 			return fmt.Errorf("failed to set hostname: %w", err)
+		}
+
+		err = custom.CopyCustomFilesToRoot()
+		if (err != nil) {
+			return fmt.Errorf("failed to copy custom files to new root: %w", err)
 		}
 
 		go func() {
@@ -94,6 +100,11 @@ func run() error {
 		err = mount.MountModloop()
 		if err != nil {
 			return err
+		}
+
+		err = custom.CopyCustomFilesToNewRoot()
+		if (err != nil) {
+			return fmt.Errorf("failed to copy custom files to new root: %w", err)
 		}
 
 		err = newroot.Switch()
