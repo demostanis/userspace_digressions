@@ -4,7 +4,6 @@ import (
 	"errors"
 	"syscall"
 	"time"
-
 	"golang.org/x/sys/unix"
 )
 
@@ -17,8 +16,9 @@ const (
 
 type Powerctl int
 
-type PoweroffArgs struct {
-	Reason string
+type PowerArgs struct {
+	Reason	string
+	Mode	string
 }
 
 // little helper for functions that do not return
@@ -28,7 +28,7 @@ func ok(reply *bool) error {
 	return nil
 }
 
-func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
+func (t *Powerctl) Power(args *PowerArgs, reply *bool) error {
 	if args.Reason == "" {
 		return errors.New("no reason provided")
 	}
@@ -44,7 +44,11 @@ func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
 	unix.Kill(-1, syscall.SIGKILL)
 
 	unix.Sync()
-	unix.Reboot(haltSystem)
+	if args.Mode == "poweroff" {
+		unix.Reboot(haltSystem)
+	} else if args.Mode == "reboot" {	
+		unix.Reboot(rebootSystem)
+	}
 
 	// yea, yea...
 	return ok(reply)
