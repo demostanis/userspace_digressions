@@ -21,6 +21,13 @@ import (
 
 const port = ":6969"
 
+const (
+	SU_MODE = 1
+	MU_MODE = 2
+	MU_MODE_NET = 3
+	MU_MODE_NET_DM = 5
+)
+
 func recoveryShell() {
 	fmt.Fprintln(os.Stderr, "something went wrong")
 	fmt.Fprintln(os.Stderr, "here's a shell for you to troubleshoot, good luck.")
@@ -59,11 +66,13 @@ func run() error {
 			return fmt.Errorf("failed to modules: %w", err)
 		}
 
+		// RUN LEVEL - SINGLE USER MODE
 		err = network.SetHostname()
 		if err != nil {
 			return fmt.Errorf("failed to set hostname: %w", err)
 		}
 
+		// RUN LEVEL - MULTI USER MODE
 		go func() {
 			err = network.StartNetworking()
 			if err != nil {
@@ -71,6 +80,7 @@ func run() error {
 			}
 		}()
 
+		// RUN LEVEL - MULTI USER MODE WITH NETWORKING
 		go func() {
 			err = tty.SetupTTYs()
 			if err != nil {
