@@ -7,9 +7,15 @@ import (
 	"os"
 
 	"github.com/demostanis/userspace_digressions/internal/initctl"
+	"github.com/demostanis/userspace_digressions/internal/services"
 )
 
 const rpcURL = "127.0.0.1:6969"
+
+const (
+	HALT = 0
+	REBOOT = 6
+)
 
 func run(subcommand string) error {
 	client, err := rpc.DialHTTP("tcp", rpcURL)
@@ -23,6 +29,11 @@ func run(subcommand string) error {
 			Mode:	"poweroff",
 		}
 
+		err = services.RunServices(HALT)
+		if err != nil {
+			return fmt.Errorf("failed to run service at run level 0: %w", err)
+		}
+
 		err = client.Call("Powerctl.Poweroff", args, nil)
 		if err != nil {
 			return fmt.Errorf("failed to poweroff: %w", err)
@@ -31,6 +42,11 @@ func run(subcommand string) error {
 		args := &initctl.PowerArgs{
 			Reason: "regular reboot",
 			Mode:	"reboot",
+		}
+
+		err = services.RunServices(REBOOT)
+		if err != nil {
+			return fmt.Errorf("failed to run service at run level 6: %w", err)
 		}
 
 		err = client.Call("Powerctl.Power", args, nil)

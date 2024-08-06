@@ -1,14 +1,13 @@
-package serviceParser
+package services
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
-type Service struct {
+type ServiceFile struct {
 	Entries []*Entry `@@*`
 }
 
@@ -17,29 +16,39 @@ type Entry struct {
 	Value	string `@Ident`
 }
 
+type Service struct {
+	Service		string
+	Command		string
+	RunLevel	string
+}
+
 var (
 	serviceLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{"Ident", `[a-zA-Z0-9/_\-.:,]+`},
+		{"Ident", `[a-zA-Z0-9\/_\-.:, <>]+`},
 		{"Punct", `=`},
 		{"whitespace", `\s+`},
 	})
-	parser = participle.MustBuild[Service](
+	parser = participle.MustBuild[ServiceFile](
 		participle.Lexer(serviceLexer),
 	)
 )
 
-func CheckServiceValidity(service *Service) error {
+func CheckServiceValidity(service *ServiceFile) (Service, error) {
 	if service.Entries[0].Key != "Service" {
-		return fmt.Errorf("line 1: no service specified")
+		return Service{}, fmt.Errorf("line 1: no service specified")
 	}
 	if service.Entries[1].Key != "Command" {
-		return fmt.Errorf("line 2: no command specified")
+		return Service{}, fmt.Errorf("line 2: no command specified")
 	}
 	if service.Entries[2].Key != "RunLevel" {
-		return fmt.Errorf("line 3: no run level specified")
+		return Service{}, fmt.Errorf("line 3: no run level specified")
 	}
-
-	return nil
+	
+	return Service{
+		Service: service.Entries[0].Value,
+		Command: service.Entries[1].Value,
+		RunLevel: service.Entries[2].Value,
+	}, nil
 }
 
 func ServiceParser(fileName string) (Service, error) {
@@ -49,15 +58,15 @@ func ServiceParser(fileName string) (Service, error) {
 	}
 	content := string(file)
 
-	service, err := parser.ParseString("", content)
+	serviceFile, err := parser.ParseString("", content)
 	if err != nil {
 		return Service{},fmt.Errorf("error parsing file: %w", err)
 	}
 
-	err = CheckServiceValidity(service)
+	service, err := CheckServiceValidity(serviceFile)
 	if err != nil {
 		return Service{},fmt.Errorf("error parsing file: %w", err)
 	}
 
-	return *service, nil
+	return service, nil
 }
