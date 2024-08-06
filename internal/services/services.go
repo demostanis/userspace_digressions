@@ -1,44 +1,65 @@
 package services
 
 import (
+	"fmt"
 	"os"
-	"exec"
+	"errors"
+	"os/exec"
 	"strconv"
-	"strings"
-	"github.com/demostanis/userspace_digressions/internal/initctl"
-)
-
-const (
-	SERVICE = 0
-	COMMAND = 1
-	RUNLEVEL = 2
 )
 
 func ExecCommand(command string) error {
-	args := strings.Split(command)
-	err := exec.Command("bash", args...)
-	return err
-}
-
-func runServices(services []Service, runLevel int) error {
-	var errors []string
-	for _, el := range services {
-		elLevel, err :=  strconv.Atoi(el.Entries[RUNLEVEL].Value)
-		if err != nil {
-			errors = append(errors, fmt.Sprintf("failed to load service %s: %v", el.Entries[SERVICE].Value));
-			continue
-		}
-		if elLevel == runLevel {
-			err = ExecCommand(el.Entries[COMMAND].Value)
-			if err != nil {
-				errors = append(errors, fmt.Sprintf("failed to load service %s: %v", el.Entries[SERVICE].Value));
-				continue
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return fmt.Errorf("encountered errors:\n%s", strings.Join(errors, "\n"))
+	cmd := exec.Command("/bin/sh", "-c", command)
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to execute %s: %w",
+			command, err)
 	}
 	return nil
+}
+
+func runService(service Service, runLevel int) error {
+	elLevel, err := strconv.Atoi(service.RunLevel)
+	if err != nil {
+		return fmt.Errorf("failed to load service %s: %w", service.Service, err)
+	}
+	if elLevel != runLevel {
+		return nil
+	}
+
+	err = ExecCommand(service.Command)
+	if err != nil {
+		return fmt.Errorf("failed to load service %s: %w", service.Service, err)
+	}
+
+	return nil
+}
+
+func RunServices(runLevel int) error {
+	serviceDir := "/services/"
+	files, err := os.ReadDir(serviceDir)
+	if err != nil {
+		return fmt.Errorf("failed to open services: %w", err)
+	}
+
+	var services[]Service
+	var resErr error
+
+	for _, file := range files {
+		service, err := ServiceParser(serviceDir + file.Name())
+		if err != nil {
+			resErr = errors.Join(resErr, fmt.Errorf("failed to parse service %s: %v", service.Service, err))
+			continue
+		}
+		services = append(services, service)
+	}
+
+	for _, service := range services {
+		err := runService(service, runLevel)
+		if err != nil {
+			resErr = errors.Join(resErr, err)
+		}
+	}
+
+	return resErr
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/fstab"
 	"github.com/demostanis/userspace_digressions/internal/custom"
 	"github.com/demostanis/userspace_digressions/internal/swap"
+	"github.com/demostanis/userspace_digressions/internal/services"
 	"golang.org/x/sys/unix"
 )
 
@@ -66,13 +67,21 @@ func run() error {
 			return fmt.Errorf("failed to modules: %w", err)
 		}
 
-		// RUN LEVEL - SINGLE USER MODE
+		err = services.RunServices(SU_MODE)
+		if err != nil {
+			return fmt.Errorf("failed to run service at run level 1: %w", err)
+		}
+
 		err = network.SetHostname()
 		if err != nil {
 			return fmt.Errorf("failed to set hostname: %w", err)
 		}
 
-		// RUN LEVEL - MULTI USER MODE
+		err = services.RunServices(MU_MODE)
+		if err != nil {
+			return fmt.Errorf("failed to run service at run level 2: %w", err)
+		}
+
 		go func() {
 			err = network.StartNetworking()
 			if err != nil {
@@ -80,7 +89,11 @@ func run() error {
 			}
 		}()
 
-		// RUN LEVEL - MULTI USER MODE WITH NETWORKING
+		err = services.RunServices(MU_MODE_NET)
+		if err != nil {
+			return fmt.Errorf("failed to run service at run level 3: %w", err)
+		}
+
 		go func() {
 			err = tty.SetupTTYs()
 			if err != nil {
