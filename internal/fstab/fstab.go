@@ -3,6 +3,7 @@ package fstab
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"golang.org/x/sys/unix"
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
@@ -73,9 +74,19 @@ func parseMountOptions(options string) (uintptr, string) {
 	return flags, strings.Join(remainingOptions, ",")
 }
 
+func MountSwap(mp *MountPoint) error {
+	cmd := exec.Command("swapon", mp.Source)
+	stdout, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", string(stdout))
+	}
+
+	return nil
+}
+
 func Mount(mp *MountPoint) error {
 	if mp.Type == "swap" {
-		return nil
+		return MountSwap(mp)
 	}
 
 	flags, remainingOptions := parseMountOptions(mp.Options)
@@ -86,18 +97,8 @@ func Mount(mp *MountPoint) error {
 	}
 
 	err = unix.Mount(mp.Source, mp.Target, mp.Type, flags, remainingOptions)
-	fmt.Printf("Source:	%s\n", mp.Source)
-	fmt.Printf("Target:	%s\n", mp.Target)
-	fmt.Printf("Type:	%s\n", mp.Type)
-	fmt.Printf("flags:	%s\n", flags)
-	fmt.Printf("Opts:	%s\n", remainingOptions)
+
 	if err != nil  {
-		if err.Error() == "no such file or directory" {
-			return nil
-		}
-		if err.Error() == "no medium found" {
-			return nil
-		}
 		return err
 	}
 

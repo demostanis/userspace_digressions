@@ -15,7 +15,6 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/tty"
 	"github.com/demostanis/userspace_digressions/internal/fstab"
 	"github.com/demostanis/userspace_digressions/internal/custom"
-	"github.com/demostanis/userspace_digressions/internal/swap"
 	"github.com/demostanis/userspace_digressions/internal/services"
 	"golang.org/x/sys/unix"
 )
@@ -48,11 +47,6 @@ func run() error {
 		err = custom.CopyCustomFilesToRoot()
 		if (err != nil) {
 			return fmt.Errorf("failed to copy custom files to new root: %w", err)
-		}
-
-		err = swap.ActivateSwap()
-		if err != nil {
-			return fmt.Errorf("failed to mount swap: %w", err)
 		}
 
 		err = fstab.FstabParser("/etc/fstab")
