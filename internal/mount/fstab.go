@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func Fsck() error {
+func fsck() error {
 	cmd := exec.Command("fsck", "-AT")
 	err := cmd.Run()
 	if err != nil {
@@ -14,11 +14,32 @@ func Fsck() error {
 	return nil
 }
 
-func Mount() error {
+func mountA() error {
 	cmd := exec.Command("mount", "-a")
 	err := cmd.Run()
 	if err != nil {
 		return errors.New("failed to mount filesystems!")
 	}
 	return nil
+}
+
+func swapon() error {
+	cmd := exec.Command("swapon", "-a")
+	err := cmd.Run()
+	if err != nil {
+		return errors.New("failed to mount swap!")
+	}
+	return nil
+}
+
+func FilesystemsCare() error {
+	err := fsck()
+	if err != nil {
+		return err
+	}
+	err = mountA()
+	if err != nil {
+		return err
+	}
+	return swapon()
 }

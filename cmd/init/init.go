@@ -47,12 +47,7 @@ func run() error {
 			return fmt.Errorf("failed to set hostname: %w", err)
 		}
 
-		err = mount.Fsck()
-		if err != nil {
-			return err
-		}
-
-		err = mount.Mount()
+		err = mount.FilesystemsCare()
 		if err != nil {
 			return err
 		}

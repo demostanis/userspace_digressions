@@ -47,6 +47,11 @@ if [ -d custom/ ]; then
 	fi
 fi
 
+swap=$(mktemp)
+trap 'rm "$swap"' EXIT
+dd if=/dev/zero of="$swap" bs=1M count=1 status=none >/dev/null
+mkswap -qL swap "$swap"
+
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
@@ -68,6 +73,7 @@ qemu-system-x86_64 \
 	-kernel boot/vmlinuz-virt \
 	-initrd boot/initramfs-virt \
 	-drive file="$iso_name",format=raw,index=0 \
+	-drive file="$swap",format=raw,index=2 \
 	-append "console=ttyS0" \
 	-nographic \
 	${qemu_args[@]}
