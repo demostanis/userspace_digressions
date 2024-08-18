@@ -29,7 +29,8 @@ func run() error {
 	// we execve'd into ourselves from the initramfs,
 	// start the real init (see internal/newroot/switch.go)
 	if len(os.Args) > 1 && os.Args[1] == "__realinit" {
-		err := mount.MountDefaultMountpoints()
+		// TODO: should bind mount somehow?
+		err := mount.MountEssentialFilesystems()
 		if err != nil {
 			return fmt.Errorf("failed to mount default mountpoints: %w", err)
 		}
@@ -75,17 +76,23 @@ func run() error {
 		}
 	} else {
 		// initramfs code
-		err := mount.MountDefaultMountpointsInitramfs()
-		if err != nil {
-			return fmt.Errorf("failed to mount default mountpoints: %w", err)
-		}
 
-		err = newroot.SetupNewroot()
+		err := mount.MountEssentialFilesystems()
 		if err != nil {
 			return fmt.Errorf("failed to setup newroot: %w", err)
 		}
 
-		err = mount.MountModloop()
+		err = modules.LoadInitramfsModules()
+		if err != nil {
+			return fmt.Errorf("failed to modules: %w", err)
+		}
+
+		modloopDir, err := newroot.SetupNewroot()
+		if err != nil {
+			return fmt.Errorf("failed to setup newroot: %w", err)
+		}
+
+		err = mount.MountModloop(modloopDir)
 		if err != nil {
 			return err
 		}

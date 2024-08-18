@@ -23,7 +23,7 @@ func installBusyBox() error {
 
 	stdout, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to install busybox: %w (output: %s)",
+		return fmt.Errorf("running busybox --install: %w (output: %s)",
 			err, string(stdout))
 	}
 	return nil

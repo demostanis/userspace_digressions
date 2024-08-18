@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/demostanis/userspace_digressions/internal/mount"
 )
 
 const sysroot = "/newroot"
@@ -102,22 +104,28 @@ func copyToNewroot() error {
 	return nil
 }
 
-func SetupNewroot() error {
+func SetupNewroot() (string, error) {
 	err := installBusyBox()
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to install busybox: %w", err)
 	}
 	repository, err := findBootMedia()
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to find lookup and create symlinks for devices: %w", err)
+	}
+	err = mount.MountNewrootFilesystems()
+	if err != nil {
+		return "", fmt.Errorf("failed to mount default mountpoints: %w", err)
 	}
 	err = installApks(repository)
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to install packages to newroot: %w", err)
 	}
 	err = copyToNewroot()
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to copy files to newroot: %w", err)
 	}
-	return nil
+
+	// repository looks something like /media/.../apks
+	return repository[:strings.LastIndex(repository, "/")], nil
 }
