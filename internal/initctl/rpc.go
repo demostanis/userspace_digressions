@@ -28,12 +28,16 @@ func ok(reply *bool) error {
 	return nil
 }
 
-func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
+func powerctl(which int) error {
 	if args.Reason == "" {
 		return errors.New("no reason provided")
 	}
 
-	Dmesg("shutting system down for the following reason: %s",
+	words := "shutting system down"
+	if which == rebootSystem {
+		words = "rebooting system"
+	}
+	Dmesg(words+" for the following reason: %s",
 		args.Reason)
 
 	Dmesg("sending SIGTERM to every process")
@@ -44,8 +48,16 @@ func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
 	unix.Kill(-1, syscall.SIGKILL)
 
 	unix.Sync()
-	unix.Reboot(haltSystem)
+	unix.Reboot(which)
 
 	// yea, yea...
 	return ok(reply)
+}
+
+func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
+	return powerctl(haltSystem)
+}
+
+func (t *Powerctl) Reboot(args *PoweroffArgs, reply *bool) error {
+	return powerctl(rebootSystem)
 }
