@@ -12,6 +12,7 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/network"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
+	"github.com/demostanis/userspace_digressions/internal/services"
 	"github.com/demostanis/userspace_digressions/internal/tty"
 	"golang.org/x/sys/unix"
 )
@@ -52,18 +53,25 @@ func run() error {
 			return err
 		}
 
-		go func() {
-			err = network.StartNetworking()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to start networking: %v\n", err)
-			}
-		}()
+		go services.StartServices()
+		services.RunlevelChan <- services.SingleUser
 
 		go func() {
 			err = tty.SetupTTYs()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to setup default consoles: %v", err)
+				return
 			}
+			services.RunlevelChan <- services.MultiUser
+		}()
+
+		go func() {
+			err = network.StartNetworking()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to start networking: %v\n", err)
+				return
+			}
+			services.RunlevelChan <- services.Networking
 		}()
 
 		powerctl := new(initctl.Powerctl)
