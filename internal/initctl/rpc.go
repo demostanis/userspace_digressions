@@ -5,6 +5,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/demostanis/userspace_digressions/internal/services"
 	"golang.org/x/sys/unix"
 )
 
@@ -28,7 +29,7 @@ func ok(reply *bool) error {
 	return nil
 }
 
-func powerctl(which int) error {
+func powerctl(args *PoweroffArgs, which int, reply *bool) error {
 	if args.Reason == "" {
 		return errors.New("no reason provided")
 	}
@@ -55,9 +56,11 @@ func powerctl(which int) error {
 }
 
 func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
-	return powerctl(haltSystem)
+	services.RunlevelChan <- services.Halt
+	return powerctl(args, haltSystem, reply)
 }
 
 func (t *Powerctl) Reboot(args *PoweroffArgs, reply *bool) error {
-	return powerctl(rebootSystem)
+	services.RunlevelChan <- services.Reboot
+	return powerctl(args, rebootSystem, reply)
 }
