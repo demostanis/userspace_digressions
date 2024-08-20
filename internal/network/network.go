@@ -5,16 +5,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
+	"regexp"
 )
 
-// Google DNS
-var defaultDNS = []string{
-	"8.8.8.8",
-	"8.8.4.4",
-}
+const networkConf = "/etc/dino.net"
 
-func getNetworkInterface() string {
+func getNetworkInterface(regex *regexp.Regexp) string {
 	ifs, err := os.ReadDir("/sys/class/net")
 	if err != nil {
 		return ""
@@ -22,17 +18,17 @@ func getNetworkInterface() string {
 
 	for _, entry := range ifs {
 		netif := entry.Name()
-		if strings.HasPrefix(netif, "en") || strings.HasPrefix(netif, "eth") {
+		if regex.MatchString(netif) {
 			return netif
 		}
 	}
 	return ""
 }
 
-func writeDNS() error {
+func writeDNS(DNS []string) error {
 	var contents string
 
-	for _, nameserver := range defaultDNS {
+	for _, nameserver := range DNS {
 		contents += "nameserver "
 		contents += nameserver
 		contents += "\n"
@@ -52,13 +48,18 @@ func bringUpInterface(netif string) error {
 }
 
 func StartNetworking() error {
-	netif := getNetworkInterface()
+	network, err := ParseNetwork(networkConf)
+	if err != nil {
+		return err
+	}
+
+	netif := getNetworkInterface(network.Interfaces)
 	if netif == "" {
 		return errors.New("no network interfaces")
 	}
 
 	// bring up loopback (localhost) interface
-	err := bringUpInterface("lo")
+	err = bringUpInterface("lo")
 	if err != nil {
 		return err
 	}
@@ -72,5 +73,5 @@ func StartNetworking() error {
 	cmd := exec.Command("udhcpc", "-i", netif, "-f", "-q")
 	go cmd.Run()
 
-	return writeDNS()
+	return writeDNS(network.DNS)
 }

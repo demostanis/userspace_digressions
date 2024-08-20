@@ -1,0 +1,2 @@
+Interfaces=(en|eth).*
+DNS=8.8.8.8,8.8.4.4
