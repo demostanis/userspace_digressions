@@ -30,7 +30,7 @@ func (service *Service) Run() {
 	cmd := exec.Command("/bin/sh", "-c", service.Command)
 
 	if commandShouldOutputToSystemLog {
-		log := exec.Command("/usr/bin/logger")
+		log := exec.Command("/usr/bin/logger", "-t", service.Name)
 
 		pipe, err := log.StdinPipe()
 		if err == nil {
