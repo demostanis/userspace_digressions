@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -50,7 +50,7 @@ fi
 swap=$(mktemp)
 trap 'rm "$swap"' EXIT
 dd if=/dev/zero of="$swap" bs=1M count=1 status=none >/dev/null
-mkswap -qL swap "$swap"
+mkswap -L swap "$swap" >/dev/null
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
