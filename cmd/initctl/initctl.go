@@ -18,13 +18,22 @@ func run(subcommand string) error {
 	}
 
 	if subcommand == "poweroff" {
-		args := &initctl.PoweroffArgs{
+		args := &initctl.PowerArgs{
 			Reason: "regular poweroff",
 		}
 
 		err = client.Call("Powerctl.Poweroff", args, nil)
 		if err != nil {
 			return fmt.Errorf("failed to poweroff: %w", err)
+		}
+	} else if subcommand == "reboot" {
+		args := &initctl.PowerArgs{
+			Reason: "regular reboot",
+		}
+
+		err = client.Call("Powerctl.Reboot", args, nil)
+		if err != nil {
+			return fmt.Errorf("failed to reboot: %w", err)
 		}
 	} else {
 		return fmt.Errorf("unknown subcommand: %s", subcommand)

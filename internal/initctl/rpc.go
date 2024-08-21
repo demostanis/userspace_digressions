@@ -18,7 +18,7 @@ const (
 
 type Powerctl int
 
-type PoweroffArgs struct {
+type PowerArgs struct {
 	Reason string
 }
 
@@ -29,7 +29,7 @@ func ok(reply *bool) error {
 	return nil
 }
 
-func powerctl(args *PoweroffArgs, which int, reply *bool) error {
+func powerctl(args *PowerArgs, which int, reply *bool) error {
 	if args.Reason == "" {
 		return errors.New("no reason provided")
 	}
@@ -55,12 +55,12 @@ func powerctl(args *PoweroffArgs, which int, reply *bool) error {
 	return ok(reply)
 }
 
-func (t *Powerctl) Poweroff(args *PoweroffArgs, reply *bool) error {
+func (t *Powerctl) Poweroff(args *PowerArgs, reply *bool) error {
 	services.RunlevelChan <- services.Halt
 	return powerctl(args, haltSystem, reply)
 }
 
-func (t *Powerctl) Reboot(args *PoweroffArgs, reply *bool) error {
+func (t *Powerctl) Reboot(args *PowerArgs, reply *bool) error {
 	services.RunlevelChan <- services.Reboot
 	return powerctl(args, rebootSystem, reply)
 }
