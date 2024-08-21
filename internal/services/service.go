@@ -23,12 +23,15 @@ type Service struct {
 	Command  string
 }
 
+var OnOffMap = make(map[string]string)
+
 func (service *Service) Run() {
 	// hack because I'm too lazy to add another property to the service parsing
 	commandShouldOutputToSystemLog := service.Name != "syslogd"
 
 	cmd := exec.Command("/bin/sh", "-c", service.Command)
 
+	OnOffMap[service.Name] = "ON"
 	if commandShouldOutputToSystemLog {
 		log := exec.Command("/usr/bin/logger", "-t", service.Name)
 
@@ -47,6 +50,7 @@ func (service *Service) Run() {
 	} else {
 		cmd.Run()
 	}
+	OnOffMap[service.Name] = "OFF"
 }
 
 func StartServices() {

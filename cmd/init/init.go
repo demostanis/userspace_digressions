@@ -75,7 +75,9 @@ func run() error {
 		}()
 
 		powerctl := new(initctl.Powerctl)
+		daemonctl := new(initctl.Daemonctl)
 		rpc.Register(powerctl)
+		rpc.Register(daemonctl)
 		rpc.HandleHTTP()
 
 		l, err := net.Listen("tcp", port)
