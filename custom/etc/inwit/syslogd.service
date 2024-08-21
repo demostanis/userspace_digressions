@@ -1,3 +1,2 @@
-Name=syslogd
 Runlevel=1
 Command=syslogd -n

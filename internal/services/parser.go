@@ -28,6 +28,8 @@ func parseService(filename string) (*Service, error) {
 	defer f.Close()
 
 	var service Service
+	name := strings.Split(filename, "/")
+	service.Name = strings.TrimSuffix(name[len(name)-1], ".ser")
 
 	lineNumber := 1
 	scanner := bufio.NewScanner(f)
@@ -39,11 +41,6 @@ func parseService(filename string) (*Service, error) {
 		}
 
 		switch parts[0] {
-		case "Name":
-			if service.Name != "" {
-				return nil, errors.New("duplicate Name=")
-			}
-			service.Name = parts[1]
 		case "Runlevel":
 			if service.Runlevel != 0 {
 				return nil, errors.New("duplicate Runlevel=")
