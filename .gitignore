@@ -2,6 +2,7 @@
 boot/
 alpine.iso
 custom.iso
+disk.img
 
 /init
 /initctl

@@ -16,6 +16,7 @@ ensurecmd() {
 }
 
 ensurecmd cpio
+ensurecmd mkfs.ext4
 ensurecmd mkisofs
 ensurecmd qemu-system-x86_64
 ensurecmd bsdtar
@@ -25,6 +26,9 @@ iso_url=https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-
 iso_name=alpine.iso
 
 qemu_args=
+
+disk_name=disk.img
+disk_size=10M
 
 # download an alpine image file
 if [ ! -e "$iso_name" ]; then
@@ -55,6 +59,12 @@ mkswap -L swap "$swap" >/dev/null
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
+if [ ! -f "$disk_name" ]; then
+	msg creating a disk for permanent files...
+	truncate -s "$disk_size" "$disk_name"
+	mkfs.ext4 -L disk "$disk_name" >/dev/null
+fi
+
 # replace /init with ours
 msg unpacking initramfs to replace /init...
 zcat boot/initramfs-virt | cpio --quiet -idD "$tmp"
@@ -74,6 +84,7 @@ qemu-system-x86_64 \
 	-initrd boot/initramfs-virt \
 	-drive file="$iso_name",format=raw,index=0 \
 	-drive file="$swap",format=raw,index=2 \
+	-drive file="$disk_name",format=raw,index=3 \
 	-append "console=ttyS0" \
 	-nographic \
 	${qemu_args[@]}

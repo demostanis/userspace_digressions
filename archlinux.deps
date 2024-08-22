@@ -1,5 +1,6 @@
 cpio
 cdrtools
+e2fsprogs
 qemu-desktop
 libarchive
 xorriso

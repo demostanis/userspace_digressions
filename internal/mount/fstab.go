@@ -2,6 +2,8 @@ package mount
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -33,7 +35,11 @@ func swapon() error {
 }
 
 func FilesystemsCare() error {
-	err := fsck()
+	err := os.MkdirAll("/mnt/disk", 755)
+	if err != nil {
+		return fmt.Errorf("couln't create disk directory: %w", err)
+	}
+	err = fsck()
 	if err != nil {
 		return err
 	}
