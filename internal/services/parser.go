@@ -77,6 +77,9 @@ func parseServices() {
 	dir, err := os.ReadDir(dirname)
 	if err == nil {
 		for _, entry := range dir {
+			if entry.Name() == "enabled" {
+				continue
+			}
 			filename := dirname + entry.Name()
 			service, err := parseService(filename)
 			if err != nil {

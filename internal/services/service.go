@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -25,7 +27,25 @@ type Service struct {
 
 var OnOffMap = make(map[string]string)
 
+func LinkDiskToServices() error {
+	err := os.Symlink("/mnt/disk/enabled/", "/etc/inwit/enabled")
+	if err != nil {
+		return fmt.Errorf("couln't link disk to daemon directory: %w", err)
+	}
+	return nil
+}
+
+func IsEnabled(service string) bool {
+	_, err := os.Stat("/etc/inwit/enabled/" + service)
+	return err == nil
+}
+
 func (service *Service) Run() {
+	if !IsEnabled(service.Name) {
+		OnOffMap[service.Name] = "OFF"
+		return
+	}
+
 	// hack because I'm too lazy to add another property to the service parsing
 	commandShouldOutputToSystemLog := service.Name != "syslogd"
 

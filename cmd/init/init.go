@@ -53,6 +53,11 @@ func run() error {
 			return err
 		}
 
+		err = services.LinkDiskToServices()
+		if err != nil {
+			return err
+		}
+
 		go services.StartServices()
 		services.RunlevelChan <- services.SingleUser
 

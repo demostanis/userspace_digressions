@@ -61,10 +61,9 @@ func (t *Daemonctl) Disable(args DaemonArgs, reply *bool) error {
 }
 
 func statusThis(service string) {
-	status := "enabled "
-	_, err := os.Stat("/etc/inwit/enabled/" + service)
-	if err != nil {
-		status = "disabled"
+	status := "disabled"
+	if services.IsEnabled(service) {
+		status = "enabled "
 	}
 	fmt.Printf("%s\t\t%s [%s]\n", service, status, services.OnOffMap[service])
 }
