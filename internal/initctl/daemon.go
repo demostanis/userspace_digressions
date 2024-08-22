@@ -2,9 +2,10 @@ package initctl
 
 import (
 	"fmt"
-	"github.com/demostanis/userspace_digressions/internal/services"
 	"os"
 	"strings"
+
+	"github.com/demostanis/userspace_digressions/internal/services"
 )
 
 type Daemonctl int
@@ -24,9 +25,17 @@ func (t *Daemonctl) Enable(args DaemonArgs, reply *bool) error {
 		return fmt.Errorf("%s is already enabled", args.Service)
 	}
 
-	err = os.MkdirAll("/etc/inwit/enabled/", 0644)
+	err = os.MkdirAll("/mnt/disk/enabled/", 0755)
 	if err != nil {
 		return fmt.Errorf("couln't create daemon directory: %w", err)
+	}
+
+	_, err = os.Stat("/etc/inwit/enabled")
+	if err != nil {
+		err = os.Symlink("/mnt/disk/enabled/", "/etc/inwit/enabled")
+		if err != nil {
+			return fmt.Errorf("couldn't create symlink to daemon directory: %w", err)
+		}
 	}
 
 	err = os.Symlink("/etc/inwit/"+args.Service+".ser", "/etc/inwit/enabled/"+args.Service)
