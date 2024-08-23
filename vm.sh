@@ -47,7 +47,7 @@ if [ -d custom/ ]; then
 
 	if [ ! -e custom.iso ]; then
 		msg creating custom.iso...
-		mkisofs -V root -o custom.iso custom/ >/dev/null 2>&1
+		mkisofs -R -V root -o custom.iso custom/ >/dev/null 2>&1
 	fi
 fi
 

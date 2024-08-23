@@ -29,7 +29,7 @@ func parseService(filename string) (*Service, error) {
 
 	var service Service
 	name := strings.Split(filename, "/")
-	service.Name = strings.TrimSuffix(name[len(name)-1], ".ser")
+	service.Name = strings.TrimSuffix(name[len(name)-1], ".service")
 
 	lineNumber := 1
 	scanner := bufio.NewScanner(f)

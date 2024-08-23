@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 )
@@ -26,14 +25,6 @@ type Service struct {
 }
 
 var OnOffMap = make(map[string]string)
-
-func LinkDiskToServices() error {
-	err := os.Symlink("/mnt/disk/enabled/", "/etc/inwit/enabled")
-	if err != nil {
-		return fmt.Errorf("couln't link disk to daemon directory: %w", err)
-	}
-	return nil
-}
 
 func IsEnabled(service string) bool {
 	_, err := os.Stat("/etc/inwit/enabled/" + service)

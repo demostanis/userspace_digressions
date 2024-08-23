@@ -8,6 +8,10 @@ import (
 	"github.com/demostanis/userspace_digressions/internal/services"
 )
 
+const (
+	srvExt = ".service"
+)
+
 type Daemonctl int
 
 type DaemonArgs struct {
@@ -15,7 +19,7 @@ type DaemonArgs struct {
 }
 
 func (t *Daemonctl) Enable(args DaemonArgs, reply *bool) error {
-	_, err := os.Stat("/etc/inwit/" + args.Service + ".ser")
+	_, err := os.Stat("/etc/inwit/" + args.Service + srvExt)
 	if err != nil {
 		return fmt.Errorf("%s does not exist", args.Service)
 	}
@@ -38,7 +42,7 @@ func (t *Daemonctl) Enable(args DaemonArgs, reply *bool) error {
 		}
 	}
 
-	err = os.Symlink("/etc/inwit/"+args.Service+".ser", "/etc/inwit/enabled/"+args.Service)
+	err = os.Symlink("/etc/inwit/"+args.Service+srvExt, "/etc/inwit/enabled/"+args.Service)
 	if err != nil {
 		return fmt.Errorf("%s couldn't be enabled: %w", args.Service, err)
 	}
@@ -70,7 +74,7 @@ func statusThis(service string) {
 
 func (t *Daemonctl) Status(args DaemonArgs, reply *bool) error {
 	if args.Service != "" {
-		_, err := os.Stat("/etc/inwit/" + args.Service + ".ser")
+		_, err := os.Stat("/etc/inwit/" + args.Service + srvExt)
 		if err != nil {
 			return fmt.Errorf("unit %s could not be found", args.Service)
 		}
@@ -81,7 +85,7 @@ func (t *Daemonctl) Status(args DaemonArgs, reply *bool) error {
 			return err
 		}
 		for _, service := range services {
-			name := strings.TrimSuffix(service.Name(), ".ser")
+			name := strings.TrimSuffix(service.Name(), srvExt)
 			if service.Name() != "enabled" {
 				statusThis(name)
 			}

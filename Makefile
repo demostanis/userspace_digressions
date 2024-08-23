@@ -11,7 +11,7 @@ build:
 	$(GO) build $(GOFLAGS) cmd/initctl/initctl.go
 
 clean:
-	$(RM) -r alpine.iso boot/ custom.iso
+	$(RM) -r alpine.iso boot/ custom.iso disk.img
 
 re: clean all
 
