@@ -62,7 +62,15 @@ trap 'rm -rf "$tmp"' EXIT
 if [ ! -f "$disk_name" ]; then
 	msg creating a disk for permanent files...
 	truncate -s "$disk_size" "$disk_name"
-	mkfs.ext4 -L disk "$disk_name" >/dev/null
+	mkdir "$tmp"/diskroot
+	trap 'rm -rf "$tmp"/diskroot' EXIT
+	mkdir "$tmp"/diskroot/enabled
+	ln -sf /etc/inwit/syslogd.service "$tmp"/diskroot/enabled/syslogd
+	# TODO: use guestfish?
+	# TODO: this is so slow
+	virt-make-fs --label=disk \
+		--type=ext4 "$tmp"/diskroot \
+		"$disk_name"
 fi
 
 # replace /init with ours
