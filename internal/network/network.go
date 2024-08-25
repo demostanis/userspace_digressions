@@ -71,7 +71,9 @@ func StartNetworking() error {
 
 	// ask for a dhcp lease
 	cmd := exec.Command("udhcpc", "-i", netif, "-f", "-q")
-	go cmd.Run()
-
-	return writeDNS(network.DNS)
+	go func() {
+		cmd.Run()
+		writeDNS(network.DNS)
+	}()
+	return nil
 }
