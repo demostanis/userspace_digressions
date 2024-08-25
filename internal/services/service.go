@@ -32,11 +32,6 @@ func IsEnabled(service string) bool {
 }
 
 func (service *Service) Run() {
-	if !IsEnabled(service.Name) {
-		OnOffMap[service.Name] = "OFF"
-		return
-	}
-
 	// hack because I'm too lazy to add another property to the service parsing
 	commandShouldOutputToSystemLog := service.Name != "syslogd"
 
@@ -69,6 +64,10 @@ func StartServices() {
 	for {
 		runlevel := <-RunlevelChan
 		for _, service := range services[runlevel] {
+			if !IsEnabled(service.Name) {
+				OnOffMap[service.Name] = "OFF"
+				continue
+			}
 			go service.Run()
 		}
 	}

@@ -20,7 +20,7 @@ var runlevelRawToRunlevel = map[string]Runlevel{
 	"6": Reboot,
 }
 
-func parseService(filename string) (*Service, error) {
+func ParseService(filename string) (*Service, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open service: %w", err)
@@ -81,7 +81,7 @@ func parseServices() {
 				continue
 			}
 			filename := dirname + entry.Name()
-			service, err := parseService(filename)
+			service, err := ParseService(filename)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to parse %s: %v\n", filename, err)
 			} else {

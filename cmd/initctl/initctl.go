@@ -64,6 +64,24 @@ func run(subcommand string, args []string) error {
 		if err != nil {
 			return err
 		}
+	case "start":
+		args := &initctl.DaemonArgs{
+			Service: strings.Join(args, ""),
+		}
+
+		err = client.Call("Daemonctl.Start", args, nil)
+		if err != nil {
+			return err
+		}
+	case "stop":
+		args := &initctl.DaemonArgs{
+			Service: strings.Join(args, ""),
+		}
+
+		err = client.Call("Daemonctl.Stop", args, nil)
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown subcommand: %s", subcommand)
 	}
