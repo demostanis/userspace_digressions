@@ -66,6 +66,7 @@ if [ ! -f "$disk_name" ]; then
 	trap 'rm -rf "$tmp"/diskroot' EXIT
 	mkdir "$tmp"/diskroot/enabled
 	ln -sf /etc/inwit/syslogd.service "$tmp"/diskroot/enabled/syslogd
+	ln -sf /etc/inwit/hwclock.service "$tmp"/diskroot/enabled/hwclock
 	# TODO: use guestfish?
 	# TODO: this is so slow
 	virt-make-fs --label=disk \
