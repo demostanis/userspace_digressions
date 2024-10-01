@@ -19,6 +19,7 @@ ensurecmd cpio
 ensurecmd mkfs.ext4
 ensurecmd mkisofs
 ensurecmd qemu-system-x86_64
+ensurecmd virt-make-fs
 ensurecmd bsdtar
 ensurecmd xorriso
 
