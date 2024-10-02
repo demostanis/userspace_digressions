@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"time"
 
 	"github.com/demostanis/userspace_digressions/internal/initctl"
 	"github.com/demostanis/userspace_digressions/internal/modules"
 	"github.com/demostanis/userspace_digressions/internal/mount"
 	"github.com/demostanis/userspace_digressions/internal/network"
 	"github.com/demostanis/userspace_digressions/internal/newroot"
+	"github.com/demostanis/userspace_digressions/internal/pkgs"
 	"github.com/demostanis/userspace_digressions/internal/services"
 	"github.com/demostanis/userspace_digressions/internal/tty"
 	"golang.org/x/sys/unix"
@@ -71,6 +73,16 @@ func run() error {
 				fmt.Fprintf(os.Stderr, "failed to start networking: %v\n", err)
 				return
 			}
+
+			// Yeah, networking should be started by now...
+			time.Sleep(5 * time.Second)
+
+			err = pkgs.InstallPackages()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to install packages: %v\n", err)
+				return
+			}
+
 			services.RunlevelChan <- services.Networking
 		}()
 

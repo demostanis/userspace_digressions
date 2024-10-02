@@ -70,6 +70,7 @@ if [ ! -f "$disk_name" ]; then
 	ln -sf /etc/inwit/hwclock.service "$tmp"/diskroot/enabled/hwclock
 	ln -sf /etc/inwit/cron.service "$tmp"/diskroot/enabled/cron
 	ln -sf /etc/inwit/crontab.service "$tmp"/diskroot/enabled/crontab
+	ln -sf /etc/inwit/udevd.service "$tmp"/diskroot/enabled/udevd
 	# TODO: use guestfish?
 	# TODO: this is so slow
 	virt-make-fs --label=disk \
